@@ -4,6 +4,7 @@ import os
 SRC_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(SRC_DIR)
 AUDIO_DIR = os.path.join(BASE_DIR, "audio")
+ASSETS_DIR = os.path.join(BASE_DIR, "assets")
 
 # Frecuencias de las notas musicales (Do, Re, Mi, Fa, Sol)
 NOTE_FREQS = {

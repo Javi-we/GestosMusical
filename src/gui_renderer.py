@@ -1,15 +1,31 @@
+import os
 import cv2
 import mediapipe as mp
 from src.config import (
-    COLOR_LEFT, COLOR_RIGHT, COLOR_TEXT, COLOR_BG
+    COLOR_LEFT, COLOR_RIGHT, COLOR_TEXT, COLOR_BG, ASSETS_DIR
 )
 
 # Inicializar Drawing Utils de MediaPipe
 mp_draw = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 
+# Pre-cargar imágenes físicas de los instrumentos
+instrument_images = {}
+
+def load_instrument_images():
+    """Carga los archivos de imágenes de instrumentos para mostrarlos en el HUD."""
+    for inst in ["piano", "guitar", "violin", "drums"]:
+        path = os.path.join(ASSETS_DIR, f"{inst}.jpg")
+        if os.path.exists(path):
+            img = cv2.imread(path)
+            if img is not None:
+                instrument_images[inst] = img
+
+# Cargar al importar el módulo
+load_instrument_images()
+
 def draw_instrument_icon(img, instrument, x, y, size=60):
-    """Dibuja un icono vectorial estilizado en pantalla basado en el instrumento activo."""
+    """Dibuja la imagen real del instrumento, o un icono vectorial de respaldo."""
     # Fondo del icono
     cv2.rectangle(img, (x, y), (x + size, y + size), (50, 50, 50), -1)
     cv2.rectangle(img, (x, y), (x + size, y + size), (150, 150, 150), 1)
@@ -17,6 +33,17 @@ def draw_instrument_icon(img, instrument, x, y, size=60):
     center_x = x + size // 2
     center_y = y + size // 2
     
+    # Intentar dibujar la imagen real cargada de assets
+    if instrument in instrument_images:
+        try:
+            # Redimensionar la imagen para que encaje dejando 1px de borde
+            icon = cv2.resize(instrument_images[instrument], (size - 2, size - 2))
+            img[y + 1 : y + size - 1, x + 1 : x + size - 1] = icon
+            return
+        except Exception as e:
+            print(f"Error al renderizar imagen de {instrument}: {e}")
+            
+    # Respaldo Vectorial en caso de que no exista la imagen física
     if instrument == "piano":
         # Teclado de Piano
         ky_start = y + size // 4
